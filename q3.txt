@@ -1,0 +1,101 @@
+-- Q3: Complete Program for Student Performance Report
+
+module Main where
+
+import System.IO (hFlush, stdout)
+
+-- Type aliases for student records
+type StudentMark = (String, Int)
+type StudentReport = (String, Int, String)
+
+-- Function 1: Using predefined values
+sampleMarks :: [StudentMark]
+sampleMarks = [("Alice", 85), ("Bob", 72), ("Charlie", 55), 
+               ("David", 38), ("Eve", 91), ("Frank", 40)]
+
+-- Function 2: Getting input from the user
+readStudentData :: IO [StudentMark]
+readStudentData = do
+    putStr "Enter student name (or 'done' to finish): "
+    hFlush stdout
+    name <- getLine
+    if name == "done"
+      then return []
+      else do
+          putStr "Enter mark: "
+          hFlush stdout
+          markStr <- getLine
+          let mark = read markStr :: Int
+          restOfStudents <- readStudentData
+          return ((name, mark) : restOfStudents)
+
+-- ## Reporting Logic ##
+
+classifyMark :: Int -> String
+classifyMark mark
+  | mark >= 80 = "Distinction"
+  | mark >= 60 = "Merit"
+  | mark >= 40 = "Pass"
+  | otherwise  = "Fail"
+
+categorizeStudents :: [StudentMark] -> [StudentReport]
+categorizeStudents [] = []
+categorizeStudents ((name, mark):xs) = 
+    (name, mark, classifyMark mark) : categorizeStudents xs
+
+countPassing :: [StudentMark] -> Int
+countPassing [] = 0
+countPassing ((_, mark):xs)
+  | mark >= 40 = 1 + countPassing xs
+  | otherwise  = countPassing xs
+
+showReport :: [StudentReport] -> String
+showReport [] = ""
+showReport ((name, mark, category):xs) =
+    "  - " ++ name ++ ": Mark = " ++ show mark ++ ", Category = " ++ category ++ "\n" ++ showReport xs
+
+-- ## Main Execution ##
+
+main :: IO ()
+main = do
+  putStrLn "--- Q3: Student Academic Performance Report ---"
+  putStr "Use (s)ample data or provide (i)nput? "
+  hFlush stdout
+  choice <- getLine
+
+  -- Choose the data source
+  marksData <- if choice == "i"
+                 then readStudentData
+                 else return sampleMarks
+
+  -- Generate and display the report
+  let categorizedList = categorizeStudents marksData
+  let passCount = countPassing marksData
+  
+  putStrLn "\n--- Performance Report ---"
+  putStrLn "Categorized Student List:"
+  putStr (showReport categorizedList)
+  putStrLn $ "Total Number of Passing Students: " ++ show passCount
+
+
+
+## Q3: Student Performance Report - Sample Inputs
+Scenario 1: Use the predefined sample data
+This will generate a report for the list of students already in the code.
+
+Paste this into the STDIN box:
+
+s
+Scenario 2: Enter three new students manually
+This tells the program you want to provide input (i), then you enter the name and mark for three students, and then type done to see their performance report.
+
+Paste this into the STDIN box:
+
+i
+Arun Kumar
+95
+Bhavya S.
+72
+Charles D.
+35
+done
