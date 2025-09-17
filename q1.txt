@@ -1,7 +1,3 @@
--- Functional Programming Lab Exam Solutions
--- This module contains solutions for all three questions from the provided document.
--- The main function at the bottom will run each solution in sequence.
-
 module Main where
 
 -------------------------------------------------------------------
