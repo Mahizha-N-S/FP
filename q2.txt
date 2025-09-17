@@ -1,0 +1,95 @@
+-- Q2: Complete Program for Cinema Ticket Sales
+
+module Main where
+
+import System.IO (hFlush, stdout)
+
+-- Type alias for a ticket sale record
+type TicketSale = (String, Int) -- (Category, Quantity)
+
+-- Function 1: Using predefined values
+sampleSales :: [TicketSale]
+sampleSales = [("Adult", 120), ("Child", 75), ("Senior", 50), ("Adult", 80), ("Child", 45)]
+
+-- Function 2: Getting input from the user
+readTicketData :: IO [TicketSale]
+readTicketData = do
+  putStr "Enter category (Adult, Child, Senior, or 'done'): "
+  hFlush stdout
+  category <- getLine
+  if category == "done"
+    then return []
+    else do
+      putStr "Enter quantity: "
+      hFlush stdout
+      quantityStr <- getLine
+      let quantity = read quantityStr :: Int
+      restOfSales <- readTicketData
+      return ((category, quantity) : restOfSales)
+
+-- ## Reporting Logic ##
+
+getPrice :: String -> Int
+getPrice "Adult"  = 12
+getPrice "Child"  = 8
+getPrice "Senior" = 10
+getPrice _        = 0
+
+totalTicketsByCategory :: [TicketSale] -> String -> Int
+totalTicketsByCategory [] _ = 0
+totalTicketsByCategory ((category, quantity):xs) targetCategory
+  | category == targetCategory = quantity + totalTicketsByCategory xs targetCategory
+  | otherwise                  = totalTicketsByCategory xs targetCategory
+
+calculateTotalRevenue :: [TicketSale] -> Int
+calculateTotalRevenue [] = 0
+calculateTotalRevenue ((category, quantity):xs) = 
+    (getPrice category * quantity) + calculateTotalRevenue xs
+
+-- ## Main Execution ##
+
+main :: IO ()
+main = do
+  putStrLn "--- Q2: Cinema Ticket Sales Report ---"
+  putStr "Use (s)ample data or provide (i)nput? "
+  hFlush stdout
+  choice <- getLine
+
+  -- Choose the data source
+  salesData <- if choice == "i"
+                 then readTicketData
+                 else return sampleSales
+  
+  -- Perform calculations and display the report
+  let adultTickets = totalTicketsByCategory salesData "Adult"
+  let childTickets = totalTicketsByCategory salesData "Child"
+  let seniorTickets = totalTicketsByCategory salesData "Senior"
+  let totalRevenue = calculateTotalRevenue salesData
+  
+  putStrLn "\n--- Sales Report ---"
+  putStrLn $ "Adult Tickets Sold: " ++ show adultTickets
+  putStrLn $ "Child Tickets Sold: " ++ show childTickets
+  putStrLn $ "Senior Tickets Sold: " ++ show seniorTickets
+  putStrLn "--------------------"
+  putStrLn $ "Total Revenue: $" ++ show totalRevenue
+
+## Q2: Cinema Ticket Sales - Sample Inputs
+Scenario 1: Use the predefined sample data
+This will run the report using the sales figures already in the code.
+
+Paste this into the STDIN box:
+
+s
+Scenario 2: Enter three new sales records manually
+This tells the program you want to provide input (i), then you enter three sales records, and then type done.
+
+Paste this into the STDIN box:
+
+i
+Adult
+50
+Child
+30
+Senior
+25
+done
