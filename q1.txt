@@ -72,3 +72,25 @@ main = do
   putStrLn $ "Emergency (Code 2) Patients: " ++ show emergencyCount
   putStrLn $ "Surgery (Code 3) Patients: " ++ show surgeryCount
   putStrLn $ "Total Number of Adult Patients: " ++ show adultCount
+
+
+## Q1: Hospital Patient Records - Sample Inputs
+Scenario 1: Use the predefined sample data
+This is the simplest option. The program will use the list of patients already written in the code.
+
+Paste this into the STDIN box:
+
+s
+Scenario 2: Enter two new patients manually
+This tells the program you want to provide input (i), then you enter the details for two patients, and finally, you type done to finish and see the report.
+
+Paste this into the STDIN box:
+
+i
+John Doe
+45
+1
+Jane Smith
+67
+2
+done
