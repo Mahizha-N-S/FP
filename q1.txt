@@ -1,176 +1,74 @@
+-- Q1: Complete Program for Hospital Patient Records
+
 module Main where
 
--------------------------------------------------------------------
--- ## Q1. Hospital Patient Records Analysis
--------------------------------------------------------------------
+import System.IO (hFlush, stdout)
 
--- Type alias for a patient record for clarity
+-- Type alias for a patient record
 type Patient = (String, Int, Int) -- (PatientName, Age, ReasonCode)
 
--- Built-in sample data as required
+-- Function 1: Using predefined values
 samplePatients :: [Patient]
-samplePatients = [("John Smith", 45, 1), 
-                  ("Jane Doe", 67, 2), 
-                  ("Peter Pan", 12, 1), 
-                  ("Mary Poppins", 38, 3), 
-                  ("Clark Kent", 35, 2),
-                  ("Lois Lane", 34, 1),
+samplePatients = [("John Smith", 45, 1), ("Jane Doe", 67, 2), ("Peter Pan", 12, 1), 
+                  ("Mary Poppins", 38, 3), ("Clark Kent", 35, 2), ("Lois Lane", 34, 1),
                   ("Bruce Wayne", 41, 3)]
 
--- Recursive function to count patients by a specific ReasonCode
+-- Function 2: Getting input from the user
+readPatientData :: IO [Patient]
+readPatientData = do
+  putStr "Enter patient name (or type 'done' to finish): "
+  hFlush stdout
+  name <- getLine
+  if name == "done"
+    then return []
+    else do
+      putStr "Enter age: "
+      hFlush stdout
+      ageStr <- getLine
+      putStr "Enter Reason Code (1=Checkup, 2=Emergency, 3=Surgery): "
+      hFlush stdout
+      reasonStr <- getLine
+      let age = read ageStr :: Int
+      let reason = read reasonStr :: Int
+      restOfPatients <- readPatientData
+      return ((name, age, reason) : restOfPatients)
+
+-- ## Analysis Logic ##
+
 countByReason :: [Patient] -> Int -> Int
 countByReason [] _ = 0
 countByReason ((_, _, reason):xs) targetReason
   | reason == targetReason = 1 + countByReason xs targetReason
   | otherwise              = countByReason xs targetReason
 
--- Recursive function to count adult patients (age >= 18)
 countAdults :: [Patient] -> Int
 countAdults [] = 0
 countAdults ((_, age, _):xs)
   | age >= 18 = 1 + countAdults xs
   | otherwise = countAdults xs
 
--- Main function for Q1 to process patient data and display the report
-mainQ1 :: IO ()
-mainQ1 = do
+-- ## Main Execution ##
+
+main :: IO ()
+main = do
   putStrLn "--- Q1: Hospital Patient Records Analysis ---"
-  putStrLn "Running on built-in sample data..."
+  putStr "Use (s)ample data or provide (i)nput? "
+  hFlush stdout
+  choice <- getLine
   
-  let generalCount = countByReason samplePatients 1
-  let emergencyCount = countByReason samplePatients 2
-  let surgeryCount = countByReason samplePatients 3
-  let adultCount = countAdults samplePatients
+  -- Choose the data source based on user input
+  patients <- if choice == "i"
+                then readPatientData
+                else return samplePatients
   
+  -- Perform and display the analysis
+  let generalCount = countByReason patients 1
+  let emergencyCount = countByReason patients 2
+  let surgeryCount = countByReason patients 3
+  let adultCount = countAdults patients
+  
+  putStrLn "\n--- Analysis Report ---"
   putStrLn $ "General Checkup (Code 1) Patients: " ++ show generalCount
   putStrLn $ "Emergency (Code 2) Patients: " ++ show emergencyCount
   putStrLn $ "Surgery (Code 3) Patients: " ++ show surgeryCount
   putStrLn $ "Total Number of Adult Patients: " ++ show adultCount
-  putStrLn ""
-
-
--------------------------------------------------------------------
--- ## Q2. Cinema Ticket Sales Report
--------------------------------------------------------------------
-
--- Type alias for a ticket sale record
-type TicketSale = (String, Int) -- (Category, Quantity)
-
--- Built-in sample data as required
-sampleSales :: [TicketSale]
-sampleSales = [("Adult", 120), 
-               ("Child", 75), 
-               ("Senior", 50), 
-               ("Adult", 80), 
-               ("Child", 45)]
-
--- Helper function to get the price for a ticket category
-getPrice :: String -> Int
-getPrice "Adult"  = 12
-getPrice "Child"  = 8
-getPrice "Senior" = 10
-getPrice _        = 0
-
--- Recursive function to calculate total tickets sold per category
-totalTicketsByCategory :: [TicketSale] -> String -> Int
-totalTicketsByCategory [] _ = 0
-totalTicketsByCategory ((category, quantity):xs) targetCategory
-  | category == targetCategory = quantity + totalTicketsByCategory xs targetCategory
-  | otherwise                  = totalTicketsByCategory xs targetCategory
-
--- Recursive function to calculate the total revenue from all sales
-calculateTotalRevenue :: [TicketSale] -> Int
-calculateTotalRevenue [] = 0
-calculateTotalRevenue ((category, quantity):xs) = 
-    (getPrice category * quantity) + calculateTotalRevenue xs
-
--- Main function for Q2 to generate and display the sales report
-mainQ2 :: IO ()
-mainQ2 = do
-  putStrLn "--- Q2: Cinema Ticket Sales Report ---"
-  putStrLn "Running on built-in sample data..."
-
-  let adultTickets = totalTicketsByCategory sampleSales "Adult"
-  let childTickets = totalTicketsByCategory sampleSales "Child"
-  let seniorTickets = totalTicketsByCategory sampleSales "Senior"
-  let totalRevenue = calculateTotalRevenue sampleSales
-  
-  putStrLn "--- Sales Report ---"
-  putStrLn $ "Adult Tickets Sold: " ++ show adultTickets
-  putStrLn $ "Child Tickets Sold: " ++ show childTickets
-  putStrLn $ "Senior Tickets Sold: " ++ show seniorTickets
-  putStrLn "--------------------"
-  putStrLn $ "Total Revenue: $" ++ show totalRevenue
-  putStrLn ""
-
-
--------------------------------------------------------------------
--- ## Q3. Student Academic Performance Report
--------------------------------------------------------------------
-
--- Type aliases for student records
-type StudentMark = (String, Int)
-type StudentReport = (String, Int, String)
-
--- Built-in sample data as required
-sampleMarks :: [StudentMark]
-sampleMarks = [("Alice", 85), 
-               ("Bob", 72), 
-               ("Charlie", 55), 
-               ("David", 38), 
-               ("Eve", 91), 
-               ("Frank", 40)]
-
--- Function to classify a mark into a performance category using guards
-classifyMark :: Int -> String
-classifyMark mark
-  | mark >= 80 = "Distinction"
-  | mark >= 60 = "Merit"
-  | mark >= 40 = "Pass"
-  | otherwise  = "Fail"
-
--- Recursive function to categorize a list of student marks
-categorizeStudents :: [StudentMark] -> [StudentReport]
-categorizeStudents [] = []
-categorizeStudents ((name, mark):xs) = 
-    (name, mark, classifyMark mark) : categorizeStudents xs
-
--- Recursive function to count the number of passing students (mark >= 40)
-countPassing :: [StudentMark] -> Int
-countPassing [] = 0
-countPassing ((_, mark):xs)
-  | mark >= 40 = 1 + countPassing xs
-  | otherwise  = countPassing xs
-
--- Helper function to pretty-print the student report list
-showReport :: [StudentReport] -> String
-showReport [] = ""
-showReport ((name, mark, category):xs) =
-    "  - " ++ name ++ ": Mark = " ++ show mark ++ ", Category = " ++ category ++ "\n" ++ showReport xs
-
--- Main function for Q3 to generate and display the performance report
-mainQ3 :: IO ()
-mainQ3 = do
-  putStrLn "--- Q3: Student Academic Performance Report ---"
-  putStrLn "Running on built-in sample data..."
-  
-  let categorizedList = categorizeStudents sampleMarks
-  let passCount = countPassing sampleMarks
-  
-  putStrLn "Categorized Student List:"
-  putStr (showReport categorizedList)
-  putStrLn $ "Total Number of Passing Students: " ++ show passCount
-  putStrLn ""
-
-
--------------------------------------------------------------------
--- ## Main Execution
--------------------------------------------------------------------
-
--- The main entry point of the program.
--- It calls the main function for each question sequentially.
-main :: IO ()
-main = do
-  mainQ1
-  mainQ2
-  mainQ3
